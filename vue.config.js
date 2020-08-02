@@ -6,11 +6,22 @@ module.exports = {
     // 输出文件目录
     outputDir: process.env.NODE_ENV === "production" ? "dist" : "devdist",
     // eslint-loader 是否在保存的时候检查
-    lintOnSave: true,
+    // lintOnSave: true,
     // webpack配置
     // see https://github.com/vuejs/vue-cli/blob/dev/docs/webpack.md
-    chainWebpack: (config) => {},
-    configureWebpack: (config) => {},
+    chainWebpack: (config) => {
+    },
+    configureWebpack: (config) => {
+      Object.assign(config, { // 开发生产共同配置，配置别名
+          resolve: {
+              alias: {
+                  '@': path.resolve(__dirname, './src'),
+                  '@c': path.resolve(__dirname, './src/components'),
+                'vue$': 'vue/dist/vue.esm.js'
+            }
+        }
+      })
+    },
     // vue-loader 配置项
     // https://vue-loader.vuejs.org/en/options.html
     // vueLoader: {},

@@ -16,6 +16,11 @@
                     <el-input type="password" v-model="ruleForm.password" autocomplete="off" minlength="6" maxlength="20"></el-input>
                 </el-form-item>
 
+                 <el-form-item prop="repassword" class="item-form" v-if="model == 'register'">
+                    <label>重复密码</label>
+                    <el-input type="password" v-model="ruleForm.repassword" autocomplete="off" minlength="6" maxlength="20"></el-input>
+                </el-form-item>
+
                 <el-form-item prop="code" class="item-form">
                     <label>验证码</label>
                     <el-row :gutter="11">
@@ -29,43 +34,58 @@
                 </el-form-item>
           
                 <el-form-item>
-                    <el-button type="danger" class="block login-btn">提交</el-button>
+                    <el-button type="danger" @click="submitForm('ruleForm')" class="block login-btn">提交</el-button>
                 </el-form-item>
             </el-form>
         </div>
     </div>
 </template>
 <script>
-import { stripScript } from "@/utils/validate.js";
+import { stripScript, validateEmail, validatePass, validateCode } from "@/utils/validate.js";
 export default {
     name: "Login",
     data(){
         var checkCode = (rule, value, callback) => {
-            let reg = /^[a-zA-Z0-9]{6}$/
             if(value === ''){
                 callback(new Error("验证码不能为空"));
-            }else if(!reg.test(value)){
+            }else if(!validateCode(value)){
                 callback(new Error("验证码格式有误"));
             }else{
                 callback();
             }
       };
       var validateUsername = (rule, value, callback) => {
-        let reg = /^[a-zA-Z0-9]+([-_.][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([-_.][a-zA-Z0-9]+)*\.[a-z]{2,}$/;
+        // let reg = /^[a-zA-Z0-9]+([-_.][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([-_.][a-zA-Z0-9]+)*\.[a-z]{2,}$/;
         if (value === '') {
           callback(new Error('请输入用户名'));
-        } else if (!reg.test(value)) {
+        } else if (!validateEmail(value)) {
           callback(new Error("用户名格式有误"));
         }else {
             callback();
         }
       };
       var validatePassword = (rule, value, callback) => {
-        let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
+        // console.log(stripScript(value));
+        this.ruleForm.password = stripScript(value);
+        value = this.ruleForm.password;
         if (value === '') {
           callback(new Error('请输入密码'));
-        } else if (!reg.test(value)) {
+        } else if (!validatePass(value)) {
           callback(new Error("密码为6到20位的字母加数字"));
+        } else{
+            callback();
+        }
+      };
+      var validateRepassword = (rule, value, callback) => {
+        if(this.model === 'login'){
+            callback();
+        }
+        this.ruleForm.repassword = stripScript(value);
+        value = this.ruleForm.repassword;
+        if (value === '') {
+          callback(new Error('请再次输入密码'));
+        } else if (value !== this.ruleForm.password) {
+          callback(new Error("两次密码不一致"));
         } else{
             callback();
         }
@@ -74,6 +94,7 @@ export default {
             ruleForm: {
                 usernaem: '',
                 password: '',
+                repassword: '',
                 code: ''
             },
             rules: {
@@ -83,23 +104,38 @@ export default {
                 password: [
                     { validator: validatePassword, trigger: 'blur' }
                 ],
+                repassword: [
+                    { validator: validateRepassword, trigger: 'blur'}
+                ],
                 code: [
                     { validator: checkCode, trigger: 'blur' }
                 ]
             },
             menuTab: [
-                {txt: "登录", current: true},
-                {txt: "注册", current: false}
+                {txt: "登录", current: true, type: 'login'},
+                {txt: "注册", current: false, type: 'register'}
             ],
+            model: 'login'
         };
     },
     methods: { //方法区
     //数据驱动视图渲染
         toggleMenu(item){
+            this.model = item.type;
             this.menuTab.forEach(element => {
                 element.current = false;
             });
             item.current = true;
+        },
+        submitForm(formName) {
+            this.$refs[formName].validate((valid) => {
+            if (valid) {
+                alert('submit!');
+            } else {
+                console.log('error submit!!');
+                return false;
+            }
+            });
         },
         resetForm(formName) {
             this.$refs[formName].resetFields();
