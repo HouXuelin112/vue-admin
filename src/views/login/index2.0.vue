@@ -41,15 +41,13 @@
     </div>
 </template>
 <script>
-import { reactive, ref, onMounted } from '@vue/composition-api';
 import { stripScript, validateEmail, validatePass, validateCode } from "@/utils/validate.js";
 export default {
     name: "Login",
     setup(props, context){
-        /**
-         * 声明数据
-         */
-        console.log(props, context)
+
+    },
+    data(){
         var checkCode = (rule, value, callback) => {
             if(value === ''){
                 callback(new Error("验证码不能为空"));
@@ -58,81 +56,82 @@ export default {
             }else{
                 callback();
             }
-        };
-        var validateUsername = (rule, value, callback) => {
-            // let reg = /^[a-zA-Z0-9]+([-_.][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([-_.][a-zA-Z0-9]+)*\.[a-z]{2,}$/;
-            if (value === '') {
-            callback(new Error('请输入用户名'));
-            } else if (!validateEmail(value)) {
-            callback(new Error("用户名格式有误"));
-            }else {
-                callback();
-            }
-        };
-        var validatePassword = (rule, value, callback) => {
-            // console.log(stripScript(value));
-            ruleForm.password = stripScript(value);
-            value = ruleForm.password;
-            if (value === '') {
-            callback(new Error('请输入密码'));
-            } else if (!validatePass(value)) {
-            callback(new Error("密码为6到20位的字母加数字"));
-            } else{
-                callback();
-            }
-        };
-        var validateRepassword = (rule, value, callback) => {
-            if(model.value === 'login'){
-                callback();
-            }
-            ruleForm.repassword = stripScript(value);
-            value = ruleForm.repassword;
-            if (value === '') {
-            callback(new Error('请再次输入密码'));
-            } else if (value !== ruleForm.password) {
-            callback(new Error("两次密码不一致"));
-            } else{
-                callback();
-            }
-        };
-        const ruleForm = reactive({
-            username: '',
-            password: '',
-            repassword: '',
-            code: ''
-        });
-        const rules = reactive({
-            username: [
-                { validator: validateUsername, trigger: 'blur' }
+      };
+      var validateUsername = (rule, value, callback) => {
+        // let reg = /^[a-zA-Z0-9]+([-_.][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([-_.][a-zA-Z0-9]+)*\.[a-z]{2,}$/;
+        if (value === '') {
+          callback(new Error('请输入用户名'));
+        } else if (!validateEmail(value)) {
+          callback(new Error("用户名格式有误"));
+        }else {
+            callback();
+        }
+      };
+      var validatePassword = (rule, value, callback) => {
+        // console.log(stripScript(value));
+        this.ruleForm.password = stripScript(value);
+        value = this.ruleForm.password;
+        if (value === '') {
+          callback(new Error('请输入密码'));
+        } else if (!validatePass(value)) {
+          callback(new Error("密码为6到20位的字母加数字"));
+        } else{
+            callback();
+        }
+      };
+      var validateRepassword = (rule, value, callback) => {
+        if(this.model === 'login'){
+            callback();
+        }
+        this.ruleForm.repassword = stripScript(value);
+        value = this.ruleForm.repassword;
+        if (value === '') {
+          callback(new Error('请再次输入密码'));
+        } else if (value !== this.ruleForm.password) {
+          callback(new Error("两次密码不一致"));
+        } else{
+            callback();
+        }
+      };
+        return{
+            ruleForm: {
+                usernaem: '',
+                password: '',
+                repassword: '',
+                code: ''
+            },
+            rules: {
+                username: [
+                    { validator: validateUsername, trigger: 'blur' }
+                ],
+                password: [
+                    { validator: validatePassword, trigger: 'blur' }
+                ],
+                repassword: [
+                    { validator: validateRepassword, trigger: 'blur'}
+                ],
+                code: [
+                    { validator: checkCode, trigger: 'blur' }
+                ]
+            },
+            menuTab: [
+                {txt: "登录", current: true, type: 'login'},
+                {txt: "注册", current: false, type: 'register'}
             ],
-            password: [
-                { validator: validatePassword, trigger: 'blur' }
-            ],
-            repassword: [
-                { validator: validateRepassword, trigger: 'blur'}
-            ],
-            code: [
-                { validator: checkCode, trigger: 'blur' }
-            ]
-        });
-        const menuTab = reactive([
-            {txt: "登录", current: true, type: 'login'},
-            {txt: "注册", current: false, type: 'register'}
-        ]);
-        const model = ref("login");
-
-        /**
-         * 声明函数
-         */
-        const toggleMenu = (item) => {
-            model.value = item.type;
-            menuTab.forEach(element => {
+            model: 'login'
+        };
+    },
+    methods: { //方法区
+    //数据驱动视图渲染
+        toggleMenu(item){
+            this.model = item.type;
+            this.menuTab.forEach(element => {
                 element.current = false;
             });
             item.current = true;
-        };
-        const submitForm = (formName) => {
-            context.refs[formName].validate((valid) => {
+        },
+        submitForm(formName) {
+            this.$refs[formName].validate((valid) => {
             if (valid) {
                 alert('submit!');
             } else {
@@ -140,31 +139,10 @@ export default {
                 return false;
             }
             });
-        };
-        const resetForm = (formName) => {
-            context.refs[formName].resetFields();
-        };
-
-        /**
-         * 生命周期
-         */
-        onMounted( () => {
-            console.log("mounted")
-        });
-
-        return{
-            //返回数据
-            menuTab,
-            model,
-            ruleForm,
-            rules,
-
-            //返回函数
-            toggleMenu,
-            submitForm,
-            resetForm
+        },
+        resetForm(formName) {
+            this.$refs[formName].resetFields();
         }
-
     },
     props: { //属性， 接收父组件的数据
 
@@ -172,6 +150,12 @@ export default {
     watch: {
 
     },
+    created(){ //加载完成之后
+        // alert("created")
+    },
+    mounted(){ //挂载完成
+        // alert("挂载完成")
+    }
 };
 </script>
 <style lang="scss" scoped>

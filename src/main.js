@@ -7,7 +7,11 @@ import store from "./store";
 //将vue.config.js中的requireModuleExtension改为true
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
+
+import VueCompositionApi from '@vue/composition-api';
+
 Vue.use(ElementUI);
+Vue.use(VueCompositionApi);
 Vue.config.productionTip = false;
 
 
